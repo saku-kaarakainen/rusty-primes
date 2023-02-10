@@ -1,41 +1,59 @@
+// imports everything from yew prelude
 use yew::prelude::*;
 
-struct Model {
-    value: i64
+// message that can be sent to the component
+// They can be for example button clicks, input changes, etc.
+enum Msg {
+    AddOne,
 }
 
-// This is like a React component
-#[function_component(App)]
-fn app() -> Html {
-    // This is like useState in React
-    let state = use_state(|| Model { 
-        value: 0 
-    });
+struct CounterComponent {
+    count: i64,
+}
 
-    // no semicolon after the last because, 
-    // otherwise onclick would return nothing, because it's a closure.
-    let onclick = {
-        // Shadows the original object
-        let state = state.clone();
-        
-        Callback::from(move |_| {
-            state.set(Model {
-                value: state.value + 1
-           })
-        })
-    };
+// Implement the Component trait for the CounterComponent struct
+// In rust impl is used to implement traits
+// In typescript it is used to implement interfaces
+//
+// for keyword is used to implement traits for structs
+// in typescript it is used to implement interfaces for classes
+impl Component for CounterComponent {
+    // Every component must define a Message and a Properties
+    type Message = Msg;
 
-    // This is like render in React    
-    html! {
-        <div>
-            // {onclick} is shorthand for {onclick: onclick}
-            <button {onclick}>{ "+1" }</button>
-            <p>{ state.value }</p>
-        </div>
+    // Properties are used to pass data to the component
+    // They are like props in react
+    type Properties = ();
+
+    // create is a lifecycle method 
+    // that is called when the component is created
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self { count: 0 }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::AddOne => {
+                self.count += 1;
+                true // true means that the component should be re-rendered
+            }
+        }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let link = ctx.link()
+        html! {
+            <div class="container">
+                <p>{ self.count }</p>
+                // In rust closures are defined with |arg1, arg2, ...| { ... }
+                // In typescript they are defined with (arg1, arg2, ...) => { ... }
+                <button onclick=link.callback(|_| Msg::AddOne)>{ "+1" }</button>
+            </div>
+        }
     }
 }
 
+
 fn main() {
-    // Reference to the app component
-    yew::start_app::<App>();
+    yew::start_app::<CounterComponent>();
 }
